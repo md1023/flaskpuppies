@@ -9,8 +9,7 @@ db.init_app(app)
 
 # PUPPIES = {
 #     "rover": {
-#         "name": "Rover",
-#         "image_url": "http://example.com/rover.jpg"
+#         "
 #     },
 #     "spot": {
 #         "name": "Spot",
@@ -26,12 +25,28 @@ def get_puppy(slug):
         "name": puppy.name,
         "image_url": puppy.image_url
     }
-    return jsonify(puppy)
+    return jsonify(output)
 
 if __name__ == "__main__":
     if "createdb" in sys.argv:
         with app.app_context():
             db.create_all()
         print("Database created!")
+    elif "seeddb" in sys.argv:
+        with app.app_context():
+            p1 = Puppy(
+                slug="rover",
+                name="Rover",
+                image_url="http://example.com/rover.jpg"
+            )
+            db.session.add(p1)
+            p2 = Puppy(
+                slug="spot",
+                name="Spot",
+                image_url="http://example.com/spot.jpg"
+            )
+            db.session.add(p2)
+            db.session.commit()
+        print("Database seeded!")
     else:
         app.run()
