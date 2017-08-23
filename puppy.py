@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, jsonify, abort
 from models import db, Puppy
 
@@ -28,4 +29,9 @@ def get_puppy(slug):
     return jsonify(puppy)
 
 if __name__ == "__main__":
-    app.run()
+    if "createdb" in sys.argv:
+        with app.app_context():
+            db.create_all()
+        print("Database created!")
+    else:
+        app.run()
