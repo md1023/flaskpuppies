@@ -1,22 +1,23 @@
 from flask import Flask, jsonify, abort
 app = Flask(__name__)
 
-PUPPIES = [
-    {
+PUPPIES = {
+    "rover": {
         "name": "Rover",
         "image_url": "http://example.com/rover.jpg"
-    }, {
+    },
+    "spot": {
         "name": "Spot",
         "image_url": "http://example.com/spot.jpg"
     }
-]
+}
 
 
-@app.route('/<int:index>')
-def get_puppy(index):
+@app.route('/<slug>')
+def get_puppy(slug):
     try:
-        puppy = PUPPIES[index]
-    except IndexError:
+        puppy = PUPPIES[slug]
+    except KeyError:
         abort(404)
     return jsonify(puppy)
 
