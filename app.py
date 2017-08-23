@@ -1,24 +1,30 @@
 from flask import Flask, jsonify, abort
-app = Flask(__name__)
+from models import db, Puppy
 
-PUPPIES = {
-    "rover": {
-        "name": "Rover",
-        "image_url": "http://example.com/rover.jpg"
-    },
-    "spot": {
-        "name": "Spot",
-        "image_url": "http://example.com/spot.jpg"
-    }
-}
+
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///puppy.db"
+db.init_app(app)
+
+# PUPPIES = {
+#     "rover": {
+#         "name": "Rover",
+#         "image_url": "http://example.com/rover.jpg"
+#     },
+#     "spot": {
+#         "name": "Spot",
+#         "image_url": "http://example.com/spot.jpg"
+#     }
+# }
 
 
 @app.route('/<slug>')
 def get_puppy(slug):
-    try:
-        puppy = PUPPIES[slug]
-    except KeyError:
-        abort(404)
+    puppy = Puppy.query.filter(Puppy.slug==slug).first_or_404()
+    output = {
+        "name": puppy.name,
+        "image_url": puppy.image_url
+    }
     return jsonify(puppy)
 
 if __name__ == "__main__":
