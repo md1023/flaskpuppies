@@ -1,5 +1,6 @@
 import sys
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, request, url_for
+from slugify import slugify
 from models import db, Puppy
 
 
@@ -7,25 +8,44 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///puppy.db"
 db.init_app(app)
 
-# PUPPIES = {
-#     "rover": {
-#         "
-#     },
-#     "spot": {
-#         "name": "Spot",
-#         "image_url": "http://example.com/spot.jpg"
-#     }
-# }
-
 
 @app.route('/<slug>')
 def get_puppy(slug):
-    puppy = Puppy.query.filter(Puppy.slug==slug).first_or_404()
+    puppy = Puppy.query.filter(Puppy.slug == slug).first_or_404()
     output = {
         "name": puppy.name,
         "image_url": puppy.image_url
     }
     return jsonify(output)
+
+
+@app.route('/', methods=["POST"])
+def create_puppy():
+    # validate attributes
+    name = request.form.get('name')
+    if not name:
+        return 'name required', 400
+    image_url = request.form.get('image_url')
+    if not image_url:
+        return 'image_url required', 400
+    slug = slugify(name)
+
+    # create in database
+    puppy = Puppy(
+        slug=slug,
+        name=name,
+        image_url=image_url
+    )
+    db.session.add(puppy)
+    db.session.commit()
+
+    # return HTTP response
+    resp = jsonify({'message': 'created'})
+    resp.status_code = 201
+    location = url_for('get_puppy', slug=slug)
+    resp.headers['Location'] = location
+    return resp
+
 
 if __name__ == "__main__":
     if "createdb" in sys.argv:
