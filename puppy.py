@@ -2,21 +2,18 @@ import sys
 from flask import Flask, jsonify, request, url_for
 from slugify import slugify
 from models import db, Puppy
-
+from schemas import ma, puppy_schema
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///puppy.db"
 db.init_app(app)
+ma.init_app(app)
 
 
 @app.route('/<slug>')
 def get_puppy(slug):
     puppy = Puppy.query.filter(Puppy.slug == slug).first_or_404()
-    output = {
-        "name": puppy.name,
-        "image_url": puppy.image_url
-    }
-    return jsonify(output)
+    return puppy_schema.jsonify(puppy)
 
 
 @app.route('/', methods=["POST"])
